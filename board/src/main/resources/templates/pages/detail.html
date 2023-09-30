@@ -1,0 +1,224 @@
+
+
+	<div th:replace="pages/header.html"></div>
+
+	<div class="container-fluid" id="reply-app">
+
+		<!-- 제목 -->
+		<div class="row mt-4">
+			<div class="col-md-10 offset-md-1">
+				<h1 th:text="${board.title}"></h1>
+				<h2 th:text="${board.writer}" class="text-secondary"></h2>
+			</div>
+		</div>
+
+		<!-- 게시글 정보 표시 -->
+		<div class="row mt-4">
+			<div class="col-md-10 offset-md-1">
+				<div class="row">
+					<div class="col-6 text-start">
+						<i class="fa-solid fa-eye"></i> <span class="ms-1" th:text="${board.readcount}"></span>						
+						<span class="ms-4 text-secondary" th:text="${#temporals.format(board.writeTime, 'yyyy.MM.dd a h:mm:ss')}"></span>					
+					</div>
+					
+					<div class="col-6 text-end">
+						<i class="ms-2 fa-regular fa-bookmark"></i>
+						<i class="ms-2 fa-solid fa-share-nodes"></i>
+						<i class="ms-2 fa-regular fa-share-from-square"></i>
+					</div>
+				</div>
+
+				<hr>
+			</div>
+		</div>
+
+		<!-- 게시글 내용 -->
+		<div class="row mt-4" style="min-height:350px;">
+			<div class="col-md-10 offset-md-1">
+				<pre th:text="${board.content}"></pre>
+			</div>
+		</div>
+
+		<!-- 버튼 영역 -->
+		<div class="row mt-4">
+			<div class="col-md-10 offset-md-1 text-end">
+				<hr>
+				<a th:href="@{write}" class="btn btn-primary">글쓰기</a>
+				<a th:href="@{write}" class="btn btn-success">답글쓰기</a>	
+								
+			<a th:href="@{/password/edit/{no}(no=${board.no})}" class="btn btn-warning">수정</a>
+			<a th:href="@{/password/delete/{no}(no=${board.no})}" class="btn btn-danger">삭제</a>	
+			
+			<!-- 아래것도 사용 가능
+			<a th:href="@{'password/edit/' + ${board.no}}" class="btn btn-warning">수정</a>
+			<a th:href="@{'password/delete/' + ${board.no}}" class="btn btn-danger">삭제</a> 		
+			-->
+
+			<a th:href="@{./}" class="btn btn-dark">목록</a>
+
+			</div>
+		</div>
+
+		 	<!-- 댓글 개수 -->
+			<div class="row mt-4">
+				<div class="col-md-10 offset-md-1">
+					<span id="reply-count"></span>
+				</div>
+			</div>
+
+			<form method="post" id="reply-form">
+				<input type="hidden" name="boardNo" th:value="${board.no}">
+				
+				<div class="row mt-4">
+					<div class="col-md-10 offset-md-1">
+						<input name="writer" class="form-control" placeholder="댓글 작성자" required>
+					</div>
+				</div>
+
+				<div class="row mt-4">
+					<div class="col-md-10 offset-md-1">
+						<textarea name="content" class="form-control" rows="4" style="resize: none;" placeholder="댓글 내용" required></textarea>
+					</div>
+				</div>
+
+				<div class="row mt-4">
+					<div class="col-md-10 offset-md-1">						
+						<input type="password" name="password" class="form-control" placeholder="비밀번호" required>													
+					</div>
+				</div>
+
+				<div class="row mt-4">
+					<div class="col-md-10 offset-md-1">
+						<button type="button" class="btn btn-primary w-100">등록</button>
+					</div>
+				</div>
+
+			</form>
+
+			<!-- 댓글 목록 -->
+			<div id="reply-list" class="row mt-4">
+				<!-- JS로 생성되는 댓글 항목들이 여기에 추가됩니다. -->
+			</div>
+
+	</div>
+
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+	<script th:inline="javascript">
+		document.addEventListener('DOMContentLoaded', (event) => {
+			const contextPath = "/board";
+	
+			const button = document.querySelector('.btn.btn-primary.w-100');
+			button.addEventListener('click', submitReply);
+	
+			async function loadReplyList() {
+				const boardNo = document.querySelector('input[name="boardNo"]').value;
+	
+				try {
+					const replyListResponse = await axios.get(contextPath + "/reply/list/" + boardNo);
+					const replyListElement = document.getElementById('reply-list');
+					replyListElement.innerHTML = ''; // 기존 댓글 목록을 지웁니다.
+	
+					replyListResponse.data.forEach(reply => {
+						const replyDiv = document.createElement('div');
+						replyDiv.className = "reply col-md-10 offset-md-1";
+	
+						const hrElement = document.createElement('hr');
+						replyDiv.appendChild(hrElement);
+	
+						const h5Element = document.createElement('h5');
+						h5Element.className = "text-dark";
+						h5Element.textContent = reply.writer;
+						replyDiv.appendChild(h5Element);
+	
+						const h6Element = document.createElement('h6');
+						h6Element.className = "text-secondary";
+						h6Element.textContent = new Date(reply.writeTime).toLocaleString();
+						replyDiv.appendChild(h6Element);
+	
+						const preElement = document.createElement('pre');
+						preElement.className = "mt-3";
+						preElement.style.minHeight = "75px";
+						preElement.textContent = reply.content;
+						replyDiv.appendChild(preElement);
+
+						// "수정" 버튼 및 폼 추가
+						const editForm = document.createElement('form');
+						editForm.style.display = 'inline-block';  // 여기에 추가
+						editForm.action = contextPath + "/reply/password/edit/" + reply.no;
+
+						const editHiddenInput = document.createElement('input');
+						editHiddenInput.type = 'hidden';
+						editHiddenInput.name = 'boardNo';
+						editHiddenInput.value = document.querySelector('input[name="boardNo"]').value; // 게시글 번호 값을 히든 필드에 설정
+
+						const editLink = document.createElement('button');
+						editLink.className = "btn btn-warning";
+						editLink.textContent = "수정";
+						editLink.style.marginRight = "10px";  // 오른쪽 마진 추가
+
+						editForm.appendChild(editHiddenInput);
+						editForm.appendChild(editLink);
+						replyDiv.appendChild(editForm);
+
+						// "삭제" 버튼 및 폼 추가
+						const deleteForm = document.createElement('form');
+						deleteForm.style.display = 'inline-block';  // 여기에 추가
+						deleteForm.action = contextPath + "/reply/password/delete/" + reply.no;
+
+						const deleteHiddenInput = document.createElement('input');
+						deleteHiddenInput.type = 'hidden';
+						deleteHiddenInput.name = 'boardNo';
+						deleteHiddenInput.value = document.querySelector('input[name="boardNo"]').value; // 게시글 번호 값을 히든 필드에 설정
+
+						const deleteLink = document.createElement('button');
+						deleteLink.className = "btn btn-danger";
+						deleteLink.textContent = "삭제";
+
+						deleteForm.appendChild(deleteHiddenInput);
+						deleteForm.appendChild(deleteLink);
+						replyDiv.appendChild(deleteForm);
+
+						replyListElement.appendChild(replyDiv);
+
+					});
+	
+					const replyCountResponse = await axios.get(contextPath + "/reply/count/" + boardNo);
+					const replyCountElement = document.getElementById('reply-count');
+					replyCountElement.textContent = replyCountResponse.data > 0 ? replyCountResponse.data + '개의 댓글' : '댓글이 없습니다.';
+
+				} catch (error) {
+					console.error("댓글 목록 불러오기 오류", error);
+				}
+			}
+	
+			function submitReply() {
+				const form = document.getElementById('reply-form');
+				const writer = form.querySelector('input[name="writer"]').value;
+				const content = form.querySelector('textarea[name="content"]').value;
+				const boardNo = form.querySelector('input[name="boardNo"]').value;
+				const password = form.querySelector('input[name="password"]').value;
+	
+				axios.post(contextPath + "/reply/insert", {
+					no: boardNo,
+					writer: writer,
+					content: content,
+					password: password
+				}).then(response => {
+					alert('댓글이 정상적으로 등록되었습니다');
+
+					// 댓글이 등록된 후에 폼 초기화
+					form.reset();
+
+					loadReplyList();
+
+				}).catch(error => {
+					console.error(error);
+					alert('댓글 추가 중 오류 발생.');
+				});
+			}
+	
+			// 페이지가 로드되면 댓글 목록을 바로 불러옵니다.
+			loadReplyList();
+		});
+	</script>

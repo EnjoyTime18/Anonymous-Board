@@ -1,0 +1,221 @@
+
+	<div th:replace="pages/header.html"></div>
+
+	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/lightpick@1.6.2/css/lightpick.css">
+     
+     <!-- container -->
+     <div class="container-fluid">
+		 <!-- 제목 -->
+		 <div class="row mt-4">
+			 <div class="col-md-10 offset-md-1">				 
+				<h1>자유 게시판</h1> 
+				<p>
+				타인에 대한 비방 또는 모욕은 사전 예고 없이 삭제됩니다	
+				</p>
+			 </div>			 
+		 </div>
+	 </div>
+
+	 <!-- 데이터 확인용-->
+	 <!-- <div class="row mt-4">
+		<div class="col-md-10 offset-md-1">
+			<div th:text="${boardVO}"></div>
+			<div th:text="${pagination}"></div>
+		</div>
+	 </div> -->
+
+	 <div class="row mt-4">		
+		<div class="col-md-10 offset-md-1">
+			<div class="card border-dark">
+				<div class="card-header">					
+					<a class="btn" data-bs-toggle="collapse" href="#collapse-body">검색 도구 상자</a>
+				</div>
+
+				<div th:class="${boardSearchDTO.search} ? 'collapse show' : 'collapse'" id="collapse-body">
+					<div class="card-body">
+
+						<!-- 검색 form -->
+						<form action="./" method="post" class="search-form" autocomplete="off">
+
+							<!-- 번호 검색 -->
+							<div class="row"><div class="col">
+								<div class="form-floating">
+									<input name="no" class="form-control" type="text" placeholder="번호" th:value="${boardSearchDTO.no}">
+									<label class="form-label text-secondary">번호</label>
+								</div>
+							</div></div>
+
+							<!-- 작성자 검색 -->
+							<div class="row mt-4"><div class="col">
+								<div class="form-floating">
+									<input name="writer" class="form-control" type="text" placeholder="작성자" th:value="${boardSearchDTO.writer}">
+									<label class="form-label text-secondary">작성자</label>
+								</div>
+							</div></div>
+
+							<!-- 제목 검색 -->
+							<div class="row mt-4"><div class="col">
+								<div class="form-floating">
+									<input name="title" class="form-control" type="text" placeholder="제목" th:value="${boardSearchDTO.title}">
+									<label class="form-label text-secondary">제목에 포함된 글자</label>
+								</div>
+							</div></div>
+
+							<!-- 내용 검색 -->
+							<div class="row mt-4"><div class="col">
+								<div class="form-floating">
+									<input name="content" class="form-control" type="text" placeholder="내용" th:value="${boardSearchDTO.content}">
+									<label class="form-label text-secondary">내용에 포함된 글자</label>
+								</div>
+							</div></div>
+
+							<!-- 기간 검색 -->
+							<div class="row mt-4">
+								<div class="col">
+									<div class="form-floating">
+										<input name="begin" class="form-control" type="text" placeholder="시작일" th:value="${boardSearchDTO.begin}">
+										<label class="form-label text-secondary">검색 시작일</label>
+									</div>
+							    </div>
+
+								<div class="col">
+									<div class="form-floating">
+										<input name="end" class="form-control" type="text" placeholder="종료일" th:value="${boardSearchDTO.end}">
+										<label class="form-label text-secondary">검색 종료일</label>
+									</div>
+								</div>
+						    </div>
+
+							<div class="row mt-4">
+								<div class="col text-end">
+									<input type="reset" class="btn btn-warning btn-lg" value="초기화">
+									<a href="./" class="btn btn-secondary btn-lg">목록</a>
+									<button type="submit" class="btn btn-success btn-lg">검색</button>
+								</div>
+							</div>
+
+						</form>
+
+					</div>
+				</div>
+
+			</div>	
+		</div>
+	</div>
+	 
+	 <!-- 게시글 개수 및 글쓰기 버튼 -->
+	  <div class="row mt-4">
+		<div class="col-md-10 offset-md-1">				 
+			<div class="row">
+				<div class="col text-start" th:text="'(' + ${pagination.current} + '/' + ${pagination.total} + ')'"></div>
+				<div class="col text-end">
+					<a th:href="@{write}" class="btn btn-primary" th:text="글쓰기"></a>
+				</div>
+			</div>	
+		</div>			 
+	 </div>
+	 
+	 <!-- 게시글 -->
+	  <div class="row mt-4">
+			 <div class="col-md-10 offset-md-1">				 
+				<table class="table table-hover">
+					<thead class="bg-dark text-light text-center">
+						<tr>
+							<th>번호</th>
+							<th width="40%">제목</th>
+							<th>작성자</th>
+							<th>작성일</th>
+							<th>조회수</th>
+						</tr>	
+					</thead>
+					<tbody class="text-center">
+					    <tr th:each="board : ${list.content}">
+						  <td th:text="${board.no}"></td>
+						  <td class="text-start">
+							  <a th:text="${board.title}" th:href="@{/detail(no=${board.no})}"></a>
+							  <span th:if="${board.replyCount > 0}" th:text="'[' + ${board.replyCount} + ']'"></span>
+						  </td>
+						  <td th:text="${board.writer}"></td>
+						  <td th:text="${#temporals.format(board.writeTime, 'yyyy-MM-dd')}"></td>						 
+						  <td th:text="${board.readcount}"></td>  		  
+					    </tr>	  	
+					</tbody>	
+				</table>
+			 </div>			 
+		 </div>
+		 
+		<!-- 페이지 네비게이터 -->
+		<div class="row mt-4">
+			<div class="col-md-10 offset-md-1">
+				<ul class="pagination justify-content-center">
+
+					<!-- 처음이 있을 경우만 링크 설정 -->
+					<li class="page-item" th:if="${pagination.hasFirstBlock()}">
+						<a class="page-link" href="#" th:data-page="${pagination.first}">&laquo;</a>
+					</li>
+					<li class="page-item" th:unless="${pagination.hasFirstBlock()}">
+						<a class="page-link disabled" href="#">&laquo;</a>
+					</li>
+
+					<!-- 이전이 있을 경우만 링크 설정 -->
+					<li class="page-item" th:if="${pagination.hasPreviousBlock()}">
+						<a class="page-link" href="#" th:data-page="${pagination.previous}">&lt;</a>
+					</li>
+					<li class="page-item" th:unless="${pagination.hasPreviousBlock()}">
+						<a class="page-link disabled" href="#">&lt;</a>
+					</li>
+
+					<!-- begin부터 end까지 표시(보여줄 땐 p, 이동할 땐 p-1) -->
+					<li class="page-item" th:each="p : ${#numbers.sequence(pagination.begin, pagination.end)}"
+						th:classappend="${p == pagination.current}? 'active' : ''">
+						<a class="page-link" href="#" th:text="${p}" th:data-page="${p == pagination.current} ? null : ${p-1}"></a>
+					</li>
+
+					<!-- 다음이 있을 경우만 링크 설정 -->
+					<li class="page-item" th:if="${pagination.hasNextBlock()}">
+						<a class="page-link" href="#" th:data-page="${pagination.next}">&gt;</a>
+					</li>
+					<li class="page-item" th:unless="${pagination.hasNextBlock()}">
+						<a class="page-link disabled" href="#">&gt;</a>
+					</li>
+
+					<!-- 마지막이 아닐 경우만 링크 설정 -->
+					<li class="page-item" th:if="${pagination.hasLastBlock()}">
+						<a class="page-link" href="#" th:data-page="${pagination.last}">&raquo;</a>
+					</li>
+					<li class="page-item" th:unless="${pagination.hasLastBlock()}">
+						<a class="page-link disabled" href="#">&raquo;</a>
+					</li>
+
+				</ul>
+			</div>
+		</div>
+		 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightpick@1.6.2/lightpick.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+	$(function(){
+		//.page-link에 대한 링크 설정(data-page 속성을 가지고 있을 경우)
+		$(".page-link").click(function(e){
+			e.preventDefault();//기본 클릭 이벤트 제거
+			
+			const page = $(this).data("page");
+			if(!$.isNumeric(page)) return;
+			
+			//.search-form에 추가하여 전송
+			$("<input>").attr("name", "page").attr("type", "hidden").val(page).appendTo(".search-form");
+			$(".search-form").submit();
+		});		
+		
+		//datepicker 설정(시작~종료일)
+		const picker = new Lightpick({
+			field: document.querySelector("input[name=begin]"),//시작일
+			secondField: document.querySelector("input[name=end]"),//종료일
+			format:"YYYY-MM-DD",//입력 형식
+			maxDate:moment(),//미래 선택 불가
+			numberOfMonths:1,//1달씩 표시되도록 설정
+		});
+	});
+</script>

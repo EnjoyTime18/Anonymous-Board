@@ -1,0 +1,43 @@
+
+	<div th:replace="pages/header.html"></div>
+
+	<div class="container-fluid">
+
+		<div class="row mt-4">
+			<div class="col-md-10 offset-md-1">
+				<h1 th:text="${reply.writer + '님의 댓글 수정'}"></h1>
+				<p class="text-secondary">댓글은 자신의 인격입니다</p>
+			</div>
+		</div>
+
+		<form method="post" id="reply-form">
+			<input type="hidden" name="no" th:value="${reply.no}">
+
+			<div class="row mt-4">
+				<div class="col-md-10 offset-md-1">
+					<input name="writer" class="form-control" placeholder="댓글 작성자" required>
+				</div>
+			</div>
+		
+			<div class="row mt-4">
+				<div class="col-md-10 offset-md-1">
+					<textarea name="content" class="form-control" rows="4" style="resize: none;" placeholder="댓글 내용" required></textarea>
+				</div>
+			</div>
+		
+			<div class="row mt-4">
+				<div class="col-md-10 offset-md-1">
+					<input type="password" name="password" class="form-control" placeholder="비밀번호" required>
+				</div>
+			</div>
+		
+			<div class="row mt-4">
+				<div class="col-md-10 offset-md-1">
+					<a th:href="@{/detail(no=${boardno})}" type="button" class="btn btn-secondary btn-lg">이전</a>
+					<button type="submit" class="btn btn-danger btn-lg">수정</button>
+				</div>
+			</div>
+		
+		</form>
+
+	</div>
